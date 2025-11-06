@@ -45,17 +45,37 @@
         .profile-links {
             margin-top: 30px;
         }
-        .link-item {
+        .link-item, .contact-button {
             display: flex;
             align-items: center;
             margin-bottom: 15px;
             padding: 15px 20px;
             background-color: #f8f9fa;
             border-radius: 8px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
             text-decoration: none;
             color: #2c3e50;
             border: 1px solid #e1e4e8;
+            cursor: pointer;
+        }
+        
+        .contact-button {
+            background-color: #3498db;
+            color: white;
+            justify-content: center;
+            font-weight: 500;
+            border: none;
+        }
+        
+        .contact-button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .contact-button svg {
+            margin-right: 10px;
+            stroke: white;
         }
         .link-item:hover {
             transform: translateY(-2px);
@@ -158,16 +178,31 @@
             document.getElementById('profile-name').textContent = 'Profile';
         }
 
-        // Set profile image
+        // Set profile image with Google Drive support
         const profileImage = document.getElementById('profile-image');
         if (photo) {
-            if (photo === 'local') {
-                // Use a default avatar for local images
-                profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
-            } else {
-                // Use the provided image URL
-                profileImage.src = photo;
+            // If it's a Google Drive URL, ensure it's using the direct image URL
+            let imageUrl = photo;
+            if (photo.includes('drive.google.com')) {
+                // Convert to direct image URL if it's a Google Drive share link
+                const fileId = photo.match(/[\w-]{20,}/);
+                if (fileId) {
+                    imageUrl = `https://drive.google.com/uc?export=view&id=${fileId[0]}`;
+                }
             }
+            
+            // Set the image source with error handling
+            profileImage.onerror = function() {
+                // If image fails to load, show default avatar
+                this.onerror = null; // Prevent infinite loop
+                this.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+            };
+            
+            profileImage.src = imageUrl;
+            profileImage.style.display = 'block';
+        } else {
+            // Show default avatar if no image is provided
+            profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
             profileImage.style.display = 'block';
         }
 
@@ -219,7 +254,14 @@
         }
         
         if (phone) {
-            linksContainer.innerHTML += createLinkElement('phone', 'Phone', 'tel:' + phone.replace(/[^0-9+]/g, ''));
+            const cleanPhone = phone.replace(/[^0-9+]/g, '');
+            linksContainer.innerHTML += `
+                <a href="tel:${cleanPhone}" class="contact-button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    <span>Contact Me</span>
+                </a>`;
         }
         
         // Add links if they exist
@@ -240,3 +282,4 @@
     </script>
 </body>
 </html>
+
