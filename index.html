@@ -27,6 +27,16 @@
             padding-bottom: 20px;
             border-bottom: 1px solid #eee;
         }
+        
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 15px;
+            display: none;
+            border: 4px solid #3498db;
+        }
         .profile-name {
             font-size: 2.2em;
             margin: 0.5em 0;
@@ -108,14 +118,15 @@
 <body>
     <div class="profile-card">
         <div class="profile-header">
-            <h1 class="profile-name" id="profileName">Profile</h1>
-            <p>Scan this QR code with the OneScan app for a better experience</p>
-            <a href="https://play.google.com/store/apps/details?id=com.example.onescanprofile" class="app-button">Get the App</a>
+            <img id="profile-image" class="profile-image" alt="Profile Picture">
+            <h1 id="profile-name" class="profile-name">Loading...</h1>
         </div>
+        <p>Scan this QR code with the OneScan app for a better experience</p>
+        <a href="https://play.google.com/store/apps/details?id=com.example.onescanprofile" class="app-button">Get the App</a>
+    </div>
 
-        <div class="profile-links" id="profileLinks">
-            <!-- Links will be added here by JavaScript -->
-        </div>
+    <div class="profile-links" id="profileLinks">
+        <!-- Links will be added here by JavaScript -->
     </div>
 
     <div class="footer">
@@ -133,14 +144,31 @@
 
         // Get profile data from URL
         const name = getUrlParameter('name');
+        const email = getUrlParameter('email');
+        const phone = getUrlParameter('phone');
         const github = getUrlParameter('github');
         const linkedin = getUrlParameter('linkedin');
+        const photo = getUrlParameter('photo');
         const resume = getUrlParameter('resume');
 
-        // Update profile name
+        // Set profile name
         if (name) {
-            document.title = name + " | OneScan Profile";
-            document.getElementById('profileName').textContent = name;
+            document.getElementById('profile-name').textContent = name;
+        } else {
+            document.getElementById('profile-name').textContent = 'Profile';
+        }
+
+        // Set profile image
+        const profileImage = document.getElementById('profile-image');
+        if (photo) {
+            if (photo === 'local') {
+                // Use a default avatar for local images
+                profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+            } else {
+                // Use the provided image URL
+                profileImage.src = photo;
+            }
+            profileImage.style.display = 'block';
         }
 
         // Add links to the page
@@ -185,6 +213,15 @@
             `;
         }
 
+        // Add contact info if they exist
+        if (email) {
+            linksContainer.innerHTML += createLinkElement('mail', 'Email', 'mailto:' + email);
+        }
+        
+        if (phone) {
+            linksContainer.innerHTML += createLinkElement('phone', 'Phone', 'tel:' + phone.replace(/[^0-9+]/g, ''));
+        }
+        
         // Add links if they exist
         if (github) {
             linksContainer.innerHTML += createLinkElement('github', 'GitHub', github);
