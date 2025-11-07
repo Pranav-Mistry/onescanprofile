@@ -537,13 +537,36 @@
                 }
             }, 500);
             
-            // Add back to home button
+            // Add back to home button with better handling
             const linksContainer = document.getElementById('profile-links');
             if (linksContainer) {
                 const backHome = document.createElement('a');
-                backHome.href = "/";
+                backHome.href = "#"; // Use # to prevent default navigation
                 backHome.className = "back-home";
                 backHome.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Home';
+                
+                // Handle the click event
+                backHome.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Try to close the web view if in the app
+                    if (window.AndroidInterface) {
+                        // If in Android WebView
+                        window.AndroidInterface.goBack();
+                    } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iosListener) {
+                        // If in iOS WKWebView
+                        window.webkit.messageHandlers.iosListener.postMessage('goBack');
+                    } else if (window.history && window.history.length > 1) {
+                        // If in a browser with history
+                        window.history.back();
+                    } else {
+                        // Fallback: Redirect to the app's website or home page
+                        const baseUrl = window.location.href.split('/').slice(0, 3).join('/');
+                        window.location.href = baseUrl;
+                    }
+                });
+                
+                // Add the button after the links container
                 linksContainer.parentNode.insertBefore(backHome, linksContainer.nextSibling);
             }
         });
