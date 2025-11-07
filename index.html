@@ -190,23 +190,33 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Back to Home Link */
-        .back-home {
-            display: block;
+        /* Section Heading */
+        .section-heading {
             text-align: center;
-            margin: 25px auto 0;
-            color: #4a6cf7;
-            text-decoration: none;
-            font-weight: 500;
-            max-width: 150px;
-            padding: 10px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            color: #2d3748;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 1.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            position: relative;
         }
         
-        .back-home:hover {
-            background: rgba(74, 108, 247, 0.1);
-            transform: translateY(-2px);
+        .section-heading:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: #4a6cf7;
+            border-radius: 2px;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .section-heading {
+                color: #e2e8f0;
+            }
         }
         
         /* Dark Mode */
@@ -537,37 +547,13 @@
                 }
             }, 500);
             
-            // Add back to home button with better handling
+            // Add "Get in Touch" heading above the links
             const linksContainer = document.getElementById('profile-links');
-            if (linksContainer) {
-                const backHome = document.createElement('a');
-                backHome.href = "#"; // Use # to prevent default navigation
-                backHome.className = "back-home";
-                backHome.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Home';
-                
-                // Handle the click event
-                backHome.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Try to close the web view if in the app
-                    if (window.AndroidInterface) {
-                        // If in Android WebView
-                        window.AndroidInterface.goBack();
-                    } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iosListener) {
-                        // If in iOS WKWebView
-                        window.webkit.messageHandlers.iosListener.postMessage('goBack');
-                    } else if (window.history && window.history.length > 1) {
-                        // If in a browser with history
-                        window.history.back();
-                    } else {
-                        // Fallback: Redirect to the app's website or home page
-                        const baseUrl = window.location.href.split('/').slice(0, 3).join('/');
-                        window.location.href = baseUrl;
-                    }
-                });
-                
-                // Add the button after the links container
-                linksContainer.parentNode.insertBefore(backHome, linksContainer.nextSibling);
+            if (linksContainer && linksContainer.children.length > 0) {
+                const heading = document.createElement('h2');
+                heading.className = 'section-heading';
+                heading.textContent = 'Get in Touch';
+                linksContainer.parentNode.insertBefore(heading, linksContainer);
             }
         });
         
