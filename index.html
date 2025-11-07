@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -107,11 +108,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #4a5568;
             font-size: 18px;
             margin-right: 15px;
             flex-shrink: 0;
         }
+        
+        .fa-envelope { color: #d44638; }
+        .fa-phone { color: #25d366; }
+        .fa-github { color: #333; }
+        .fa-linkedin { color: #0a66c2; }
+        .fa-file-pdf { color: #e74c3c; }
+        .fa-link { color: #4a6cf7; }
         
         .link-text {
             flex: 1;
@@ -225,7 +232,13 @@
                 linkTitle = 'Call';
                 displayText = url;
             } else if (!url.match(/^[a-zA-Z]+:\/\//)) {
-                href = `https://${url}`;
+                if (icon === 'github') {
+                    href = `https://github.com/${url}`;
+                } else if (icon === 'linkedin') {
+                    href = `https://linkedin.com/in/${url}`;
+                } else {
+                    href = `https://${url}`;
+                }
             }
             
             // Format display text for social links
@@ -251,6 +264,11 @@
             };
             
             const iconClass = iconMap[icon.toLowerCase()] || iconMap.default;
+            
+            // Special handling for resume to ensure it's always clickable
+            if (icon === 'resume' && !url.startsWith('http')) {
+                href = url.startsWith('content:') ? url : `https://${url}`;
+            }
             
             return `
                 <a href="${encodeURI(href)}" class="social-link" target="_blank" rel="noopener noreferrer">
@@ -313,9 +331,13 @@
                     linksHTML += createSocialLink('linkedin', 'LinkedIn', profileData.linkedin);
                 }
                 
-                // Add Resume if available
+                // Add Resume if available - always show as a clickable link
                 if (profileData.resume) {
-                    linksHTML += createSocialLink('resume', 'Resume', profileData.resume);
+                    let resumeUrl = profileData.resume;
+                    if (!resumeUrl.startsWith('http') && !resumeUrl.startsWith('content:')) {
+                        resumeUrl = 'https://' + resumeUrl;
+                    }
+                    linksHTML += createSocialLink('resume', 'View Resume', resumeUrl);
                 }
                 
                 // Update the container with all links or show a message
