@@ -247,6 +247,92 @@
             }
         }
 
+        // Update the page with profile data
+        function updateProfileUI() {
+            // Update profile info
+            document.getElementById('profile-name').textContent = profileData.name || 'Profile';
+            document.getElementById('profile-email').textContent = profileData.email || '';
+            document.getElementById('profile-phone').textContent = profileData.phone || '';
+            
+            // Update social links
+            const linksContainer = document.getElementById('profile-links');
+            if (linksContainer) {
+                linksContainer.innerHTML = ''; // Clear existing links
+                
+                // Add email link if available
+                if (profileData.email) {
+                    const emailLink = document.createElement('a');
+                    emailLink.href = 'mailto:' + profileData.email;
+                    emailLink.className = 'social-link';
+                    emailLink.innerHTML = '<i class="fas fa-envelope"></i> Email';
+                    linksContainer.appendChild(emailLink);
+                }
+                
+                // Add phone link if available
+                if (profileData.phone) {
+                    const phoneLink = document.createElement('a');
+                    phoneLink.href = 'tel:' + profileData.phone.replace(/[^0-9+]/g, '');
+                    phoneLink.className = 'social-link';
+                    phoneLink.innerHTML = '<i class="fas fa-phone"></i> ' + profileData.phone;
+                    linksContainer.appendChild(phoneLink);
+                }
+                
+                // Add GitHub link if available
+                if (profileData.github) {
+                    let githubUrl = profileData.github;
+                    if (!githubUrl.startsWith('http')) {
+                        githubUrl = 'https://github.com/' + githubUrl;
+                    }
+                    const githubLink = document.createElement('a');
+                    githubLink.href = githubUrl;
+                    githubLink.className = 'social-link';
+                    githubLink.innerHTML = '<i class="fab fa-github"></i> GitHub';
+                    githubLink.target = '_blank';
+                    linksContainer.appendChild(githubLink);
+                }
+                
+                // Add LinkedIn link if available
+                if (profileData.linkedin) {
+                    let linkedinUrl = profileData.linkedin;
+                    if (!linkedinUrl.startsWith('http')) {
+                        linkedinUrl = 'https://linkedin.com/in/' + linkedinUrl;
+                    }
+                    const linkedinLink = document.createElement('a');
+                    linkedinLink.href = linkedinUrl;
+                    linkedinLink.className = 'social-link';
+                    linkedinLink.innerHTML = '<i class="fab fa-linkedin"></i> LinkedIn';
+                    linkedinLink.target = '_blank';
+                    linksContainer.appendChild(linkedinLink);
+                }
+                
+                // Add Resume link if available
+                if (profileData.resume) {
+                    const resumeLink = document.createElement('a');
+                    resumeLink.href = profileData.resume;
+                    resumeLink.className = 'social-link';
+                    resumeLink.innerHTML = '<i class="fas fa-file-pdf"></i> View Resume';
+                    resumeLink.target = '_blank';
+                    linksContainer.appendChild(resumeLink);
+                }
+            }
+            
+            // Update profile photo if available
+            if (profileData.photo) {
+                const profileImage = document.getElementById('profile-image');
+                if (profileImage) {
+                    profileImage.src = profileData.photo;
+                    profileImage.style.display = 'block';
+                }
+            }
+        }
+        
+        // Run the update when the DOM is fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateProfileUI);
+        } else {
+            updateProfileUI();
+        }
+        
         // Log the received data for debugging
         console.log('Profile data:', JSON.stringify(profileData, null, 2));
 
@@ -416,3 +502,4 @@
     </script>
 </body>
 </html>
+
