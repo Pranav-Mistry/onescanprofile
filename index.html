@@ -5,23 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - OneScan</title>
     <script>
+        // Function to parse URL parameters
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            const results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
         // Check if we should redirect to the app
         (function() {
-            // Only redirect if we have a deep link parameter
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.toString()) {
+            // Only redirect if we have parameters and not coming from a redirect
+            if (window.location.search && !sessionStorage.getItem('redirected')) {
+                // Mark that we've attempted a redirect
+                sessionStorage.setItem('redirected', 'true');
+                
                 // Create app deep link
-                const appLink = 'onescanprofile://viewprofile?' + window.location.search.substring(1);
+                const appLink = 'onescanprofile://viewprofile' + window.location.search;
                 
                 // Try to open the app
                 window.location.href = appLink;
                 
                 // If the app is not installed, this will fail and continue to the web version
-                // Add a small delay to prevent flashing on mobile
                 setTimeout(function() {
                     // If we're still here after a short delay, the app didn't open
                     // Continue showing the web version
+                    sessionStorage.removeItem('redirected');
                 }, 100);
+            } else {
+                // Clear the redirect flag if no parameters
+                sessionStorage.removeItem('redirected');
             }
         })();
     </script>
@@ -159,8 +172,10 @@
 <body>
     <div class="profile-card">
         <div class="profile-header">
-            <img id="profile-image" class="profile-image" alt="Profile Picture">
-            <h1 id="profile-name" class="profile-name">Loading...</h1>
+            <img id="profile-image" class="profile-image" alt="Profile Picture" style="display: none;">
+            <h1 id="profile-name" class="profile-name">Profile</h1>
+            <p id="profile-email" class="profile-title"></p>
+            <p id="profile-phone" class="profile-title"></p>
         </div>
         <p>Scan this QR code with the OneScan app for a better experience</p>
         <a href="https://play.google.com/store/apps/details?id=com.example.onescanprofile" class="app-button">Get the App</a>
@@ -177,33 +192,54 @@
     <script>
         // Parse URL parameters
         function getUrlParameter(name) {
-            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-            const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-            const results = regex.exec(location.search);
-            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(name) || '';
+            } catch (e) {
+                console.error('Error parsing URL parameters:', e);
+                return '';
+            }
         }
 
-        // Get profile data from URL
-        const name = getUrlParameter('name');
-        const email = getUrlParameter('email');
-        const phone = getUrlParameter('phone');
-        const github = getUrlParameter('github');
-        const linkedin = getUrlParameter('linkedin');
-        const photo = getUrlParameter('photo');
-        const resume = getUrlParameter('resume');
+        // Get all profile data from URL
+        const profileData = {
+            name: getUrlParameter('name'),
+            email: getUrlParameter('email'),
+            phone: getUrlParameter('phone'),
+            github: getUrlParameter('github'),
+            linkedin: getUrlParameter('linkedin'),
+            photo: getUrlParameter('photo'),
+            resume: getUrlParameter('resume')
+        };
 
-        // Set profile name
-        if (name) {
-            document.getElementById('profile-name').textContent = name;
+        // Log the received data for debugging
+        console.log('Profile data:', JSON.stringify(profileData, null, 2));
+
+        // Set profile name and title
+        const profileName = document.getElementById('profile-name');
+        profileName.textContent = profileData.name || 'Profile';
+        
+        // Set profile email and phone if available
+        const profileEmail = document.getElementById('profile-email');
+        const profilePhone = document.getElementById('profile-phone');
+        
+        if (profileData.email) {
+            profileEmail.textContent = profileData.email;
+            profileEmail.style.display = 'block';
         } else {
-            document.getElementById('profile-name').textContent = 'Profile';
+            profileEmail.style.display = 'none';
+        }
+        
+        if (profileData.phone) {
+            profilePhone.textContent = profileData.phone;
+            profilePhone.style.display = 'block';
+        } else {
+            profilePhone.style.display = 'none';
         }
 
         // Set profile image with enhanced error handling
         const profileImage = document.getElementById('profile-image');
         const defaultAvatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
-        
-        console.log('Profile image URL:', photo); // Debug log
         
         function setImageWithFallback(imageUrl) {
             console.log('Attempting to load image:', imageUrl);
@@ -232,12 +268,12 @@
             testImg.src = imageUrl;
         }
         
-        if (photo && photo.trim() !== '') {
-            // If photo URL is from ImgBB, ensure it's using the direct link format
-            let imageUrl = photo.trim();
+        // Handle profile photo
+        if (profileData.photo && profileData.photo.trim() !== '') {
+            let imageUrl = profileData.photo.trim();
             
             // Clean up the URL if it's from ImgBB
-            if (imageUrl.includes('imgbb.com') && !imageUrl.endsWith('.jpg') && !imageUrl.endsWith('.png') && !imageUrl.endsWith('.jpeg')) {
+            if (imageUrl.includes('imgbb.com') && !imageUrl.match(/\.(jpg|jpeg|png|gif)$/i)) {
                 // Try to extract the direct image URL
                 const matches = imageUrl.match(/https?:\/\/[^\s]+?\.(?:jpg|jpeg|png|gif)/i);
                 if (matches && matches[0]) {
@@ -256,42 +292,37 @@
 
         // Add links to the page
         const linksContainer = document.getElementById('profileLinks');
-        let hasLinks = false;
-
-        function createLinkElement(icon, title, url) {
+        let linksHTML = '';
+        
+        // Function to create a link element
+        function createLink(icon, title, url, isEmail = false, isPhone = false) {
             if (!url) return '';
-            hasLinks = true;
             
-            // Ensure URL has a protocol
-            if (!url.match(/^https?:\/\//)) {
-                url = 'https://' + url;
+            let href = url;
+            if (isEmail) {
+                href = 'mailto:' + url;
+            } else if (isPhone) {
+                href = 'tel:' + url.replace(/[^0-9+]/g, '');
+            } else if (!url.match(/^[a-zA-Z]+:\/\//)) {
+                href = 'https://' + url;
             }
             
-            const iconSvg = {
-                'github': `<svg class="link-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>`,
-                'linkedin': `<svg class="link-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.238 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>`,
-                'resume': `<svg class="link-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2h-8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-12l-6-6zm-1 15h-6v-2h6v2zm0-4h-6v-2h6v2zm-1-5v-4.5l4.5 4.5h-4.5z"/></svg>`
+            const icons = {
+                'email': '✉️',
+                'phone': '📞',
+                'github': '🐙',
+                'linkedin': '💼',
+                'resume': '📄',
+                'default': '🔗'
             };
-
-            let hostname;
-            try {
-                hostname = new URL(url).hostname.replace('www.', '');
-            } catch (e) {
-                hostname = url;
-            }
+            
+            const icon = icons[icon.toLowerCase()] || icons['default'];
             
             return `
-                <a href="${url}" target="_blank" class="link-item">
-                    ${iconSvg[icon] || ''}
-                    <div class="link-text">
-                        <h3 class="link-title">${title}</h3>
-                        <p class="link-url">${hostname}</p>
-                    </div>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                        <polyline points="15 3 21 3 21 9"></polyline>
-                        <line x1="10" y1="14" x2="21" y2="3"></line>
-                    </svg>
+                <a href="${href}" target="_blank" rel="noopener noreferrer" class="link-item">
+                    <span class="link-icon">${icon}</span>
+                    <span class="link-text">${title}</span>
+                    <span class="link-arrow">→</span>
                 </a>
             `;
         }
@@ -330,4 +361,5 @@
     </script>
 </body>
 </html>
+
 
