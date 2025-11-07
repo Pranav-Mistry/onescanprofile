@@ -210,61 +210,40 @@
             }
         }
 
-        // Get the profile ID from URL
-        const profileId = getUrlParameter('id');
+        // Get all URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const profileId = urlParams.get('id') || '';
         let profileData = {};
-
-        // Try to load profile data from localStorage if available (for demo purposes)
-        // In a real app, you would fetch this from your server
-        if (profileId) {
-            const storedProfile = localStorage.getItem('profile_' + profileId);
-            if (storedProfile) {
-                try {
-                    profileData = JSON.parse(storedProfile);
-                } catch (e) {
-                    console.error('Error parsing profile data:', e);
-                }
-            }
-        }
-
-        // If we have a profile ID but no stored data, try to get it from URL parameters
-        if (profileId && Object.keys(profileData).length === 0) {
-            // Try to get data from URL parameters as a fallback
-            profileData = {
-                name: getUrlParameter('name') || 'Profile',
-                email: getUrlParameter('email') || '',
-                phone: getUrlParameter('phone') || '',
-                github: getUrlParameter('github') || '',
-                linkedin: getUrlParameter('linkedin') || '',
-                resume: getUrlParameter('resume') || '',
-                photo: getUrlParameter('photo') || ''
-            };
-            
-            // If we got data from URL parameters, store it for future use
-            if (profileData.name !== 'Profile') {
-                try {
-                    localStorage.setItem('profile_' + profileId, JSON.stringify(profileData));
-                } catch (e) {
-                    console.error('Error saving profile data to localStorage:', e);
-                }
-            }
-        }
         
-        // If we still don't have any data, show an error
-        if (Object.keys(profileData).length === 0) {
-            profileData = {
-                name: getUrlParameter('name'),
-                email: getUrlParameter('email'),
-                phone: getUrlParameter('phone'),
-                github: getUrlParameter('github'),
-                linkedin: getUrlParameter('linkedin'),
-                photo: getUrlParameter('photo'),
-                resume: getUrlParameter('resume')
-            };
-            
-            // If we have a name, store it with the profile ID for future use
-            if (profileData.name && profileId) {
+        // Get all profile data from URL parameters
+        profileData = {
+            id: profileId,
+            name: urlParams.get('name') || 'Profile',
+            email: urlParams.get('email') || '',
+            phone: urlParams.get('phone') || '',
+            github: urlParams.get('github') || '',
+            linkedin: urlParams.get('linkedin') || '',
+            resume: urlParams.get('resume') || '',
+            photo: urlParams.get('photo') || ''
+        };
+        
+        // Clean up the data
+        Object.keys(profileData).forEach(key => {
+            if (typeof profileData[key] === 'string') {
+                profileData[key] = profileData[key].trim();
+            }
+        });
+        
+        // Log the received data for debugging
+        console.log('Profile data from URL:', JSON.stringify(profileData, null, 2));
+        
+        // Store the data in localStorage for future visits (if we have a profile ID)
+        if (profileId) {
+            try {
                 localStorage.setItem('profile_' + profileId, JSON.stringify(profileData));
+                console.log('Profile data saved to localStorage');
+            } catch (e) {
+                console.error('Error saving to localStorage:', e);
             }
         }
 
@@ -297,7 +276,14 @@
         const profileImage = document.getElementById('profile-image');
         const defaultAvatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
         
+        // Function to handle image loading with fallback
         function setImageWithFallback(imageUrl) {
+            if (!imageUrl) {
+                profileImage.src = defaultAvatar;
+                profileImage.style.display = 'block';
+                return;
+            }
+            
             console.log('Attempting to load image:', imageUrl);
             
             // Create a test image to check if the URL is valid
@@ -325,17 +311,33 @@
         }
         
         // Handle profile photo
-        if (profileData.photo && profileData.photo.trim() !== '') {
+        if (profileData.photo) {
             let imageUrl = profileData.photo.trim();
             
-            // Clean up the URL if it's from ImgBB
-            if (imageUrl.includes('imgbb.com') && !imageUrl.match(/\.(jpg|jpeg|png|gif)$/i)) {
-                // Try to extract the direct image URL
-                const matches = imageUrl.match(/https?:\/\/[^\s]+?\.(?:jpg|jpeg|png|gif)/i);
-                if (matches && matches[0]) {
-                    imageUrl = matches[0];
-                    console.log('Extracted direct image URL:', imageUrl);
+            // Clean up the URL if it's from ImgBB or similar services
+            if (imageUrl.includes('imgbb.com') || imageUrl.includes('i.ibb.co')) {
+                // For ImgBB, try to get the direct image URL
+                if (imageUrl.includes('/a/')) {
+                    // Handle album links
+                    const imgId = imageUrl.split('/').pop();
+                    if (imgId) {
+                        imageUrl = `https://i.ibb.co/${imgId}`;
+                    }
+                } else if (imageUrl.includes('/view/')) {
+                    // Handle view links
+                    const parts = imageUrl.split('/');
+                    const imgId = parts[parts.length - 2];
+                    if (imgId) {
+                        imageUrl = `https://i.ibb.co/${imgId}`;
+                    }
                 }
+                
+                // Ensure it has an image extension
+                if (!imageUrl.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
+                    imageUrl += '.jpg';
+                }
+                
+                console.log('Processed image URL:', imageUrl);
             }
             
             setImageWithFallback(imageUrl);
@@ -414,6 +416,3 @@
     </script>
 </body>
 </html>
-
-
-
