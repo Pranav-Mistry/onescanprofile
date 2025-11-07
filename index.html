@@ -482,56 +482,26 @@
             `;
         }
 
-        // Add contact links using profileData
-        if (profileData.email) {
-            linksHTML += createLink('email', 'Email', profileData.email, true);
-        }
-        
-        if (profileData.phone) {
-            linksHTML += createLink('phone', 'Call', profileData.phone, false, true);
-        }
-        
-        // Add social and other links
-        if (profileData.github) {
-            linksHTML += createLink('github', 'GitHub', profileData.github);
-        }
-        
-        if (profileData.linkedin) {
-            linksHTML += createLink('linkedin', 'LinkedIn', profileData.linkedin);
-        }
-        
-        if (profileData.resume) {
-            linksHTML += createLink('resume', 'View Resume', profileData.resume);
-        }
-        
-        // Update the profile information
-        const profileName = document.getElementById('profile-name');
-        const profileEmail = document.getElementById('profile-email');
-        const profilePhone = document.getElementById('profile-phone');
-        
-        // Update profile info if elements exist
-        if (profileName) profileName.textContent = profileData.name || 'Profile';
-        if (profileEmail) profileEmail.textContent = profileData.email || '';
-        if (profilePhone) profilePhone.textContent = profileData.phone || '';
-        
-        // Update the links container
-        if (linksHTML) {
-            linksContainer.innerHTML = linksHTML;
-            console.log('Links added to the page:', linksHTML);
-        } else {
-            console.log('No links to display');
-            linksContainer.innerHTML = `
-                <div class="no-links">
-                    <p>No contact information available for this profile.</p>
-                    ${profileData.id ? `<p>Profile ID: ${profileData.id}</p>` : ''}
-                </div>`;
-        }
-        
         // Log the final profile data for debugging
         console.log('Final profile data:', JSON.stringify(profileData, null, 2));
+        
+        // Initialize the page when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded, initializing profile...');
+            updateProfileUI();
+            
+            // Handle profile photo with fallback
+            if (profileData.photo) {
+                setImageWithFallback(profileData.photo);
+            } else {
+                // Set default avatar if no photo
+                const profileImage = document.getElementById('profile-image');
+                if (profileImage) {
+                    profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+                    profileImage.style.display = 'block';
+                }
+            }
+        });
     </script>
 </body>
 </html>
-
-
-
