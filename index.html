@@ -4,16 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - OneScan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', sans-serif;
         }
         
         body {
-            background-color: #f5f7fa;
+            background-color: #f0f2f5;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -22,98 +25,146 @@
         }
         
         .profile-card {
-            background: white;
-            border-radius: 20px;
+            background: #ffffff;
+            border-radius: 16px;
             width: 100%;
-            max-width: 380px;
-            padding: 40px 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 400px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #4a6cf7 0%, #2541b2 100%);
+            padding: 30px 0;
             text-align: center;
+            position: relative;
+        }
+        
+        .profile-image-container {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            padding: 3px;
+            background: white;
         }
         
         .profile-image {
-            width: 120px;
-            height: 120px;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            margin: 0 auto 20px;
-            border: 4px solid #4a90e2;
             display: block;
         }
         
         .profile-name {
-            font-size: 24px;
+            color: white;
+            font-size: 22px;
             font-weight: 600;
-            color: #2c3e50;
             margin-bottom: 5px;
         }
         
         .profile-title {
-            color: #7f8c8d;
-            font-size: 16px;
-            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 400;
+        }
+        
+        .profile-body {
+            padding: 30px;
         }
         
         .social-links {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
         
         .social-link {
             display: flex;
             align-items: center;
-            padding: 14px 20px;
+            padding: 15px 20px;
             background: #f8f9fa;
-            border-radius: 10px;
-            color: #2c3e50;
+            border-radius: 12px;
+            color: #2d3748;
             text-decoration: none;
             transition: all 0.3s ease;
-            text-align: left;
+            border: 1px solid #e2e8f0;
         }
         
         .social-link:hover {
-            background: #eef2f7;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-color: #cbd5e0;
         }
         
         .social-link i {
-            width: 24px;
-            text-align: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #edf2f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4a5568;
+            font-size: 18px;
             margin-right: 15px;
-            font-size: 20px;
-            color: #4a90e2;
+            flex-shrink: 0;
         }
         
         .link-text {
             flex: 1;
+            overflow: hidden;
         }
         
         .link-title {
             display: block;
             font-weight: 500;
+            font-size: 14px;
+            color: #4a5568;
             margin-bottom: 3px;
-            color: #2c3e50;
         }
         
         .link-url {
+            display: block;
             font-size: 12px;
-            color: #7f8c8d;
+            color: #718096;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        
+        .no-links {
+            text-align: center;
+            color: #718096;
+            padding: 20px 0;
+            font-size: 14px;
+        }
+        
+        /* Specific icon colors */
+        .fa-envelope { color: #d44638 !important; }
+        .fa-phone { color: #25d366 !important; }
+        .fa-github { color: #333 !important; }
+        .fa-linkedin { color: #0a66c2 !important; }
+        .fa-file-pdf { color: #e74c3c !important; }
+        .fa-link { color: #4a6cf7 !important; }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div class="profile-card">
-        <img id="profile-image" class="profile-image" src="" alt="Profile Image">
-        <h1 id="profile-name" class="profile-name">John Doe</h1>
-        <p id="profile-title" class="profile-title">Software Developer</p>
-        <div id="profile-links" class="social-links">
-            <!-- Links will be added here by JavaScript -->
+        <div class="profile-header">
+            <div class="profile-image-container">
+                <img id="profile-image" class="profile-image" src="" alt="Profile Image" onerror="this.src='https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'">
+            </div>
+            <h1 id="profile-name" class="profile-name">Loading...</h1>
+            <div id="profile-title" class="profile-title">Profile</div>
+        </div>
+        <div class="profile-body">
+            <div id="profile-links" class="social-links">
+                <!-- Links will be added here by JavaScript -->
+            </div>
         </div>
     </div>
 
@@ -129,6 +180,21 @@
             }
         }
 
+        // Process photo URL (handle ImgBB and other cases)
+        function processPhotoUrl(url) {
+            if (!url) return '';
+            
+            // If it's an ImgBB URL, make sure it's direct
+            if (url.includes('imgbb.com') && !url.includes('i.ibb.co')) {
+                // Try to convert to direct link format
+                const match = url.match(/imgbb\.com\/([a-zA-Z0-9]+)/);
+                if (match && match[1]) {
+                    return `https://i.ibb.co/${match[1]}/image.png`;
+                }
+            }
+            return url;
+        }
+
         // Get all URL parameters
         const profileData = {
             id: getUrlParam('id'),
@@ -139,7 +205,7 @@
             github: getUrlParam('github'),
             linkedin: getUrlParam('linkedin'),
             resume: getUrlParam('resume'),
-            photo: getUrlParam('photo')
+            photo: processPhotoUrl(getUrlParam('photo'))
         };
 
         // Function to create a social link
@@ -153,9 +219,11 @@
             if (isEmail) {
                 href = `mailto:${url}`;
                 linkTitle = 'Email';
+                displayText = url;
             } else if (isPhone) {
                 href = `tel:${url.replace(/[^0-9+]/g, '')}`;
                 linkTitle = 'Call';
+                displayText = url;
             } else if (!url.match(/^[a-zA-Z]+:\/\//)) {
                 href = `https://${url}`;
             }
@@ -178,69 +246,87 @@
                 'phone': 'phone',
                 'github': 'github',
                 'linkedin': 'linkedin',
-                'resume': 'file-alt'
+                'resume': 'file-pdf',
+                'default': 'link'
             };
             
-            const iconClass = iconMap[icon.toLowerCase()] || 'link';
+            const iconClass = iconMap[icon.toLowerCase()] || iconMap.default;
             
             return `
                 <a href="${encodeURI(href)}" class="social-link" target="_blank" rel="noopener noreferrer">
                     <i class="fas fa-${iconClass}"></i>
-                    <span class="link-text">
+                    <div class="link-text">
                         <span class="link-title">${linkTitle}</span>
-                        <span class="link-url">${displayText}</span>
-                    </span>
+                        <span class="link-url" title="${displayText}">${displayText}</span>
+                    </div>
+                    <i class="fas fa-external-link-alt" style="font-size: 12px; color: #a0aec0; margin-left: 10px;"></i>
                 </a>
             `;
         }
 
         // Update the UI with profile data
         function updateProfileUI() {
-            // Update profile info
-            document.getElementById('profile-name').textContent = profileData.name || 'Profile';
-            document.getElementById('profile-title').textContent = profileData.title || 'Profile';
-            
-            // Set profile image with fallback
-            const profileImage = document.getElementById('profile-image');
-            if (profileData.photo) {
-                profileImage.src = profileData.photo;
-                profileImage.style.display = 'block';
-                profileImage.onerror = function() {
-                    this.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=identicon&f=y';
-                };
-            } else {
-                profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=identicon&f=y';
-                profileImage.style.display = 'block';
-            }
-            
-            // Add social links
-            const linksContainer = document.getElementById('profile-links');
-            let linksHTML = '';
-            
-            if (profileData.email) {
-                linksHTML += createSocialLink('email', 'Email', profileData.email, true);
-            }
-            
-            if (profileData.phone) {
-                linksHTML += createSocialLink('phone', 'Call', profileData.phone, false, true);
-            }
-            
-            if (profileData.github) {
-                linksHTML += createSocialLink('github', 'GitHub', profileData.github);
-            }
-            
-            if (profileData.linkedin) {
-                linksHTML += createSocialLink('linkedin', 'LinkedIn', profileData.linkedin);
-            }
-            
-            if (profileData.resume) {
-                linksHTML += createSocialLink('resume', 'Resume', profileData.resume);
-            }
-            
-            if (linksHTML) {
-                linksContainer.innerHTML = linksHTML;
-            } else {
-                linksContainer.innerHTML = '<p>No contact information available.</p>';
+            try {
+                // Update profile info
+                const nameElement = document.getElementById('profile-name');
+                const titleElement = document.getElementById('profile-title');
+                
+                if (nameElement) nameElement.textContent = profileData.name;
+                if (titleElement) titleElement.textContent = profileData.title || 'Profile';
+                
+                // Set profile image with fallback
+                const profileImage = document.getElementById('profile-image');
+                if (profileImage) {
+                    if (profileData.photo) {
+                        profileImage.src = profileData.photo;
+                        profileImage.onerror = function() {
+                            this.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+                        };
+                    } else {
+                        profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+                    }
+                }
+                
+                // Add social links
+                const linksContainer = document.getElementById('profile-links');
+                if (!linksContainer) return;
+                
+                let linksHTML = '';
+                
+                // Add email if available
+                if (profileData.email) {
+                    linksHTML += createSocialLink('email', 'Email', profileData.email, true);
+                }
+                
+                // Add phone if available
+                if (profileData.phone) {
+                    linksHTML += createSocialLink('phone', 'Call', profileData.phone, false, true);
+                }
+                
+                // Add GitHub if available
+                if (profileData.github) {
+                    linksHTML += createSocialLink('github', 'GitHub', profileData.github);
+                }
+                
+                // Add LinkedIn if available
+                if (profileData.linkedin) {
+                    linksHTML += createSocialLink('linkedin', 'LinkedIn', profileData.linkedin);
+                }
+                
+                // Add Resume if available
+                if (profileData.resume) {
+                    linksHTML += createSocialLink('resume', 'Resume', profileData.resume);
+                }
+                
+                // Update the container with all links or show a message
+                if (linksHTML) {
+                    linksContainer.innerHTML = linksHTML;
+                } else {
+                    linksContainer.innerHTML = '<div class="no-links">No contact information available</div>';
+                }
+                
+            } catch (error) {
+                console.error('Error updating profile UI:', error);
             }
         }
 
