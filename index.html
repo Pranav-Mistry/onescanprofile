@@ -102,14 +102,13 @@
         
         /* Moved to social-link i styles */
         
-        /* Icon styles for all social links */
+        /* Social link icons */
         .social-link i {
-            color: #4a5568; /* Default icon color */
             width: 40px;
             height: 40px;
             border-radius: 10px;
             background: #edf2f7;
-            display: flex;
+            display: flex !important; /* Force display */
             align-items: center;
             justify-content: center;
             font-size: 18px;
@@ -117,19 +116,28 @@
             flex-shrink: 0;
         }
         
-        /* Specific icon colors */
-        .social-link i.fa-envelope { color: #d44638; }
-        .social-link i.fa-phone { color: #25d366; }
-        .social-link i.fa-github-alt { color: #333; }
-        .social-link i.fa-linkedin-in { color: #0a66c2; }
-        .social-link i.fa-file-pdf { color: #e74c3c; }
-        .social-link i.fa-external-link-alt {
-            color: #a0aec0;
-            font-size: 12px;
-            margin: 0 0 0 10px;
-            width: auto;
-            height: auto;
-            background: none;
+        /* Specific icon colors and fixes */
+        .social-link i.fas,
+        .social-link i.fab {
+            color: #4a5568; /* Default icon color */
+        }
+        
+        .social-link i.fa-envelope { color: #d44638 !important; }
+        .social-link i.fa-phone { color: #25d366 !important; }
+        .social-link i.fa-github { color: #333 !important; }
+        .social-link i.fa-github-alt { color: #333 !important; }
+        .social-link i.fa-linkedin { color: #0a66c2 !important; }
+        .social-link i.fa-linkedin-in { color: #0a66c2 !important; }
+        .social-link i.fa-file-pdf { color: #e74c3c !important; }
+        
+        /* External link icon */
+        .social-link .fa-external-link-alt {
+            color: #a0aec0 !important;
+            font-size: 12px !important;
+            margin: 0 0 0 10px !important;
+            width: auto !important;
+            height: auto !important;
+            background: none !important;
         }
         
         .link-text {
@@ -315,15 +323,16 @@
             }
             
             const iconMap = {
-                'email': 'envelope',
-                'phone': 'phone',
-                'github': 'github-alt',
-                'linkedin': 'linkedin-in',
-                'resume': 'file-pdf',
-                'default': 'link'
+                'email': { class: 'fas', icon: 'envelope' },
+                'phone': { class: 'fas', icon: 'phone' },
+                'github': { class: 'fab', icon: 'github' },
+                'linkedin': { class: 'fab', icon: 'linkedin-in' },
+                'resume': { class: 'fas', icon: 'file-pdf' },
+                'default': { class: 'fas', icon: 'link' }
             };
             
-            const iconClass = iconMap[icon.toLowerCase()] || iconMap.default;
+            // Get icon config or default
+            const iconConfig = iconMap[icon.toLowerCase()] || iconMap.default;
             
             // Special handling for resume to ensure it's always clickable
             if (icon === 'resume' && !url.startsWith('http')) {
@@ -332,7 +341,7 @@
             
             return `
                 <a href="${encodeURI(href)}" class="social-link" target="_blank" rel="noopener noreferrer">
-                    <i class="fab fa-${iconClass}"></i>
+                    <i class="${iconConfig.class} fa-${iconConfig.icon}"></i>
                     <div class="link-text">
                         <span class="link-title">${linkTitle}</span>
                         <span class="link-url" title="${displayText}">${displayText}</span>
