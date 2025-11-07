@@ -20,6 +20,14 @@
         (function() {
             // Only redirect if we have a profile ID and not coming from a redirect
             const profileId = getUrlParameter('id');
+            
+            // If no profile ID, show an error
+            if (!profileId) {
+                document.getElementById('profile-name').textContent = 'Profile Not Found';
+                document.getElementById('profile-email').textContent = 'No profile ID provided in the URL';
+                document.getElementById('profile-phone').textContent = 'Please scan a valid QR code';
+                return;
+            }
             if (profileId && !sessionStorage.getItem('redirected')) {
                 // Mark that we've attempted a redirect
                 sessionStorage.setItem('redirected', 'true');
@@ -219,7 +227,30 @@
             }
         }
 
-        // Fallback to direct URL parameters if no profile ID or stored data
+        // If we have a profile ID but no stored data, try to get it from URL parameters
+        if (profileId && Object.keys(profileData).length === 0) {
+            // Try to get data from URL parameters as a fallback
+            profileData = {
+                name: getUrlParameter('name') || 'Profile',
+                email: getUrlParameter('email') || '',
+                phone: getUrlParameter('phone') || '',
+                github: getUrlParameter('github') || '',
+                linkedin: getUrlParameter('linkedin') || '',
+                resume: getUrlParameter('resume') || '',
+                photo: getUrlParameter('photo') || ''
+            };
+            
+            // If we got data from URL parameters, store it for future use
+            if (profileData.name !== 'Profile') {
+                try {
+                    localStorage.setItem('profile_' + profileId, JSON.stringify(profileData));
+                } catch (e) {
+                    console.error('Error saving profile data to localStorage:', e);
+                }
+            }
+        }
+        
+        // If we still don't have any data, show an error
         if (Object.keys(profileData).length === 0) {
             profileData = {
                 name: getUrlParameter('name'),
@@ -383,4 +414,5 @@
     </script>
 </body>
 </html>
+
 
