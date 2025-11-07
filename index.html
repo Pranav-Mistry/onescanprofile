@@ -5,55 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - OneScan</title>
     <script>
-        // Improved deep linking with better fallback
+        // Check if we should redirect to the app
         (function() {
-            // Only redirect if we have parameters
+            // Only redirect if we have a deep link parameter
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.toString()) {
-                // Create both app deep link and web URL
-                const queryString = window.location.search.substring(1);
-                const appLink = 'onescan://profile?' + queryString;
-                const webLink = window.location.href;
+                // Create app deep link
+                const appLink = 'onescanprofile://viewprofile?' + window.location.search.substring(1);
                 
                 // Try to open the app
-                window.location = appLink;
+                window.location.href = appLink;
                 
-                // If app is not installed, fall back to web after a delay
+                // If the app is not installed, this will fail and continue to the web version
+                // Add a small delay to prevent flashing on mobile
                 setTimeout(function() {
-                    if (!document.hidden) {
-                        // If we're still on the page and it's visible, the app didn't open
-                        // Continue showing the web version
-                        console.log('App not installed, showing web version');
-                    }
-                }, 500);
-                
-                // Handle visibility change (for iOS)
-                document.addEventListener('visibilitychange', function() {
-                    if (document.hidden) {
-                        // If the page is hidden, the app might have opened
-                        console.log('Page hidden, app might have opened');
-                    }
-                });
+                    // If we're still here after a short delay, the app didn't open
+                    // Continue showing the web version
+                }, 100);
             }
-            
-            // Function to handle email clicks with better mobile support
-            window.handleEmailClick = function(email) {
-                if (!email) return false;
-                
-                // Try to open default email client
-                const mailtoLink = 'mailto:' + encodeURIComponent(email);
-                window.location.href = mailtoLink;
-                
-                // If on mobile and mailto: doesn't work, offer a fallback
-                setTimeout(function() {
-                    if (!document.hidden) {
-                        // If we're still here, mailto: didn't work
-                        window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(email), '_blank');
-                    }
-                }, 200);
-                
-                return false;
-            };
         })();
     </script>
     <style>
@@ -329,30 +298,7 @@
 
         // Add contact info if they exist
         if (email) {
-            // Create a special email link that uses our handler
-            const emailLink = document.createElement('a');
-            emailLink.href = '#';
-            emailLink.className = 'link-item';
-            emailLink.onclick = (e) => {
-                e.preventDefault();
-                handleEmailClick(email);
-                return false;
-            };
-            emailLink.innerHTML = `
-                <svg class="link-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                </svg>
-                <div class="link-text">
-                    <h3 class="link-title">Email</h3>
-                    <p class="link-url">${email}</p>
-                </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                    <polyline points="15 3 21 3 21 9"></polyline>
-                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
-            `;
-            linksContainer.appendChild(emailLink);
+            linksContainer.innerHTML += createLinkElement('mail', 'Email', 'mailto:' + email);
         }
         
         if (phone) {
@@ -384,3 +330,4 @@
     </script>
 </body>
 </html>
+
