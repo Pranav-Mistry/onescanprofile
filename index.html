@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         * {
             margin: 0;
@@ -113,12 +113,13 @@
             flex-shrink: 0;
         }
         
-        .fa-envelope { color: #d44638; }
-        .fa-phone { color: #25d366; }
-        .fa-github { color: #333; }
-        .fa-linkedin { color: #0a66c2; }
-        .fa-file-pdf { color: #e74c3c; }
-        .fa-link { color: #4a6cf7; }
+        /* Ensure all icons are visible with proper colors */
+        .social-link i.fa-envelope { color: #d44638 !important; }
+        .social-link i.fa-phone { color: #25d366 !important; }
+        .social-link i.fa-github { color: #333 !important; }
+        .social-link i.fa-linkedin { color: #0a66c2 !important; }
+        .social-link i.fa-file-pdf { color: #e74c3c !important; }
+        .social-link i.fa-external-link-alt { color: #a0aec0 !important; }
         
         .link-text {
             flex: 1;
@@ -305,8 +306,8 @@
             const iconMap = {
                 'email': 'envelope',
                 'phone': 'phone',
-                'github': 'github',
-                'linkedin': 'linkedin',
+                'github': 'github-alt',  // Using github-alt for better visibility
+                'linkedin': 'linkedin-in',  // Using linkedin-in for better visibility
                 'resume': 'file-pdf',
                 'default': 'link'
             };
@@ -320,12 +321,12 @@
             
             return `
                 <a href="${encodeURI(href)}" class="social-link" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-${iconClass}"></i>
+                    <i class="fab fa-${iconClass}"></i>
                     <div class="link-text">
                         <span class="link-title">${linkTitle}</span>
                         <span class="link-url" title="${displayText}">${displayText}</span>
                     </div>
-                    <i class="fas fa-external-link-alt" style="font-size: 12px; color: #a0aec0; margin-left: 10px;"></i>
+                    <i class="fas fa-external-link-alt"></i>
                 </a>
             `;
         }
