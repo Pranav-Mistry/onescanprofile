@@ -4,49 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - OneScan</title>
-    <script>
-        // Function to parse URL parameters
-        function getUrlParameter(name) {
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                return urlParams.get(name) || '';
-            } catch (e) {
-                console.error('Error parsing URL parameters:', e);
-                return '';
-            }
-        }
-
-        // Check if we should redirect to the app
-        (function() {
-            // Only redirect if we have a profile ID and not coming from a redirect
-            const profileId = getUrlParameter('id');
-            
-            // If no profile ID, show an error
-            if (!profileId) {
-                document.getElementById('profile-name').textContent = 'Profile Not Found';
-                document.getElementById('profile-email').textContent = 'No profile ID provided in the URL';
-                document.getElementById('profile-phone').textContent = 'Please scan a valid QR code';
-                return;
-            }
-            if (profileId && !sessionStorage.getItem('redirected')) {
-                // Mark that we've attempted a redirect
-                sessionStorage.setItem('redirected', 'true');
-                
-                // Try to open the app
-                window.location.href = `onescanprofile://view?id=${profileId}`;
-                
-                // If the app is not installed, this will fail and continue to the web version
-                setTimeout(function() {
-                    // If we're still here after a short delay, the app didn't open
-                    // Continue showing the web version
-                    sessionStorage.removeItem('redirected');
-                }, 500);
-            } else {
-                // Clear the redirect flag if no profile ID
-                sessionStorage.removeItem('redirected');
-            }
-        })();
-    </script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -64,158 +21,80 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             margin-top: 20px;
         }
-        .profile-header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
-        }
-        
         .profile-image {
-            width: 120px;
-            height: 120px;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
             object-fit: cover;
-            margin: 0 auto 15px;
-            display: none;
+            margin: 0 auto 20px;
+            display: block;
             border: 4px solid #3498db;
         }
         .profile-name {
             font-size: 2.2em;
             margin: 0.5em 0;
             color: #2c3e50;
+            text-align: center;
         }
-        .profile-links {
-            margin-top: 30px;
+        .social-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
         }
-        .link-item, .contact-button {
+        .social-link {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
-            padding: 15px 20px;
-            background-color: #f8f9fa;
+            padding: 12px 20px;
+            background: #f8f9fa;
             border-radius: 8px;
-            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            color: #333;
             text-decoration: none;
-            color: #2c3e50;
-            border: 1px solid #e1e4e8;
-            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        
-        .contact-button {
-            background-color: #3498db;
-            color: white;
-            justify-content: center;
-            font-weight: 500;
-            border: none;
-        }
-        
-        .contact-button:hover {
-            background-color: #2980b9;
+        .social-link:hover {
+            background: #e9ecef;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        
-        .contact-button svg {
+        .social-link i {
             margin-right: 10px;
-            stroke: white;
-        }
-        .link-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            background-color: #fff;
-        }
-        .link-icon {
+            font-size: 20px;
             width: 24px;
-            height: 24px;
-            margin-right: 15px;
-            color: #3498db;
+            text-align: center;
         }
         .link-text {
             flex: 1;
+            text-align: left;
         }
         .link-title {
-            font-weight: 600;
-            margin: 0;
-            color: #2c3e50;
+            display: block;
+            font-weight: 500;
         }
         .link-url {
-            font-size: 0.9em;
-            color: #7f8c8d;
-            margin: 3px 0 0;
-            word-break: break-all;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 50px;
-            color: #95a5a6;
-            font-size: 0.9em;
-        }
-        .app-button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-        .app-button:hover {
-            background-color: #2980b9;
-        }
-        @media (max-width: 600px) {
-            .profile-card {
-                padding: 20px;
-            }
-            .profile-name {
-                font-size: 1.8em;
-            }
-            .link-item {
-                padding: 12px 15px;
-            }
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div class="profile-card">
-        <div class="profile-header">
-            <img id="profile-image" class="profile-image" alt="Profile Picture" style="display: none;">
-            <h1 id="profile-name" class="profile-name">Profile</h1>
-            <p id="profile-email" class="profile-title"></p>
-            <p id="profile-phone" class="profile-title"></p>
+        <img id="profile-image" class="profile-image" src="" alt="Profile Image">
+        <h1 id="profile-name" class="profile-name">Loading...</h1>
+        <div id="profile-links" class="social-links">
+            <!-- Links will be added here by JavaScript -->
         </div>
-        <p>Scan this QR code with the OneScan app for a better experience</p>
-        <a href="https://play.google.com/store/apps/details?id=com.example.onescanprofile" class="app-button">Get the App</a>
-    </div>
-
-    <div class="profile-links" id="profileLinks">
-        <!-- Links will be added here by JavaScript -->
-    </div>
-
-    <div class="footer">
-        <p>Shared via OneScan Profile</p>
     </div>
 
     <script>
         // Parse URL parameters
-        function getUrlParameter(name) {
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                return urlParams.get(name) || '';
-            } catch (e) {
-                console.error('Error parsing URL parameters:', e);
-                return '';
-            }
-        }
-
-        // Function to safely get URL parameter with fallback
         function getUrlParam(param) {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
-                const value = urlParams.get(param) || '';
-                return typeof value === 'string' ? value.trim() : '';
+                return urlParams.get(param) || '';
             } catch (e) {
                 console.error('Error getting URL parameter:', e);
                 return '';
@@ -225,7 +104,7 @@
         // Get all URL parameters
         const profileData = {
             id: getUrlParam('id'),
-            name: getUrlParam('name') || 'Profile',
+            name: decodeURIComponent(getUrlParam('name') || 'Profile'),
             email: getUrlParam('email'),
             phone: getUrlParam('phone'),
             github: getUrlParam('github'),
@@ -233,288 +112,96 @@
             resume: getUrlParam('resume'),
             photo: getUrlParam('photo')
         };
-        
-        // Log the received data for debugging
-        console.log('Profile data from URL:', JSON.stringify(profileData, null, 2));
 
-        // Update the page with profile data
-        function updateProfileUI() {
-            // Safely update profile info
-            const safeSetText = (id, text) => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.textContent = text;
-                } else {
-                    console.warn(`Element with ID '${id}' not found`);
-                }
-            };
+        // Function to create a social link
+        function createSocialLink(icon, title, url, isEmail = false, isPhone = false) {
+            if (!url) return '';
             
-            safeSetText('profile-name', profileData.name || 'Profile');
-            safeSetText('profile-email', profileData.email || '');
-            safeSetText('profile-phone', profileData.phone || '');
-            
-            // Update social links
-            const linksContainer = document.getElementById('profile-links');
-            if (linksContainer) {
-                linksContainer.innerHTML = ''; // Clear existing links
-                
-                // Add email link if available
-                if (profileData.email) {
-                    const emailLink = document.createElement('a');
-                    emailLink.href = 'mailto:' + profileData.email;
-                    emailLink.className = 'social-link';
-                    emailLink.innerHTML = '<i class="fas fa-envelope"></i> Email';
-                    linksContainer.appendChild(emailLink);
-                }
-                
-                // Add phone link if available
-                if (profileData.phone) {
-                    const phoneLink = document.createElement('a');
-                    phoneLink.href = 'tel:' + profileData.phone.replace(/[^0-9+]/g, '');
-                    phoneLink.className = 'social-link';
-                    phoneLink.innerHTML = '<i class="fas fa-phone"></i> ' + profileData.phone;
-                    linksContainer.appendChild(phoneLink);
-                }
-                
-                // Add GitHub link if available
-                if (profileData.github) {
-                    let githubUrl = profileData.github;
-                    if (!githubUrl.startsWith('http')) {
-                        githubUrl = 'https://github.com/' + githubUrl;
-                    }
-                    const githubLink = document.createElement('a');
-                    githubLink.href = githubUrl;
-                    githubLink.className = 'social-link';
-                    githubLink.innerHTML = '<i class="fab fa-github"></i> GitHub';
-                    githubLink.target = '_blank';
-                    linksContainer.appendChild(githubLink);
-                }
-                
-                // Add LinkedIn link if available
-                if (profileData.linkedin) {
-                    let linkedinUrl = profileData.linkedin;
-                    if (!linkedinUrl.startsWith('http')) {
-                        linkedinUrl = 'https://linkedin.com/in/' + linkedinUrl;
-                    }
-                    const linkedinLink = document.createElement('a');
-                    linkedinLink.href = linkedinUrl;
-                    linkedinLink.className = 'social-link';
-                    linkedinLink.innerHTML = '<i class="fab fa-linkedin"></i> LinkedIn';
-                    linkedinLink.target = '_blank';
-                    linksContainer.appendChild(linkedinLink);
-                }
-                
-                // Add Resume link if available
-                if (profileData.resume) {
-                    const resumeLink = document.createElement('a');
-                    resumeLink.href = profileData.resume;
-                    resumeLink.className = 'social-link';
-                    resumeLink.innerHTML = '<i class="fas fa-file-pdf"></i> View Resume';
-                    resumeLink.target = '_blank';
-                    linksContainer.appendChild(resumeLink);
-                }
-            }
-            
-            // Update profile photo if available
-            if (profileData.photo) {
-                const profileImage = document.getElementById('profile-image');
-                if (profileImage) {
-                    profileImage.src = profileData.photo;
-                    profileImage.style.display = 'block';
-                }
-            }
-        }
-        
-        // Run the update when the DOM is fully loaded
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', updateProfileUI);
-        } else {
-            updateProfileUI();
-        }
-        
-        // Log the received data for debugging
-        console.log('Profile data:', JSON.stringify(profileData, null, 2));
-        
-        // Profile data is now handled in the updateProfileUI function
-
-        // Set profile image with enhanced error handling
-        const profileImage = document.getElementById('profile-image');
-        const defaultAvatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
-        
-        // Function to handle image loading with fallback
-        function setImageWithFallback(imageUrl) {
-            if (!imageUrl) {
-                profileImage.src = defaultAvatar;
-                profileImage.style.display = 'block';
-                return;
-            }
-            
-            console.log('Attempting to load image:', imageUrl);
-            
-            // Create a test image to check if the URL is valid
-            const testImg = new Image();
-            
-            testImg.onload = function() {
-                console.log('Image loaded successfully');
-                profileImage.onerror = null; // Clear any previous error handlers
-                profileImage.onload = function() {
-                    console.log('Profile image displayed');
-                    profileImage.style.display = 'block';
-                };
-                profileImage.src = imageUrl;
-            };
-            
-            testImg.onerror = function() {
-                console.error('Failed to load image, using fallback');
-                profileImage.onerror = null; // Prevent infinite loop
-                profileImage.src = defaultAvatar;
-                profileImage.style.display = 'block';
-            };
-            
-            // Start loading the test image
-            testImg.src = imageUrl;
-        }
-        
-        // Handle profile photo
-        if (profileData.photo) {
-            let imageUrl = profileData.photo.trim();
-            
-            // Clean up the URL if it's from ImgBB or similar services
-            if (imageUrl.includes('imgbb.com') || imageUrl.includes('i.ibb.co')) {
-                // For ImgBB, try to get the direct image URL
-                if (imageUrl.includes('/a/')) {
-                    // Handle album links
-                    const imgId = imageUrl.split('/').pop();
-                    if (imgId) {
-                        imageUrl = `https://i.ibb.co/${imgId}`;
-                    }
-                } else if (imageUrl.includes('/view/')) {
-                    // Handle view links
-                    const parts = imageUrl.split('/');
-                    const imgId = parts[parts.length - 2];
-                    if (imgId) {
-                        imageUrl = `https://i.ibb.co/${imgId}`;
-                    }
-                }
-                
-                // Ensure it has an image extension
-                if (!imageUrl.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
-                    imageUrl += '.jpg';
-                }
-                
-                console.log('Processed image URL:', imageUrl);
-            }
-            
-            setImageWithFallback(imageUrl);
-        } else {
-            // No photo URL provided, use default avatar
-            console.log('No photo URL provided, using default avatar');
-            profileImage.src = defaultAvatar;
-            profileImage.style.display = 'block';
-        }
-
-        // Add links to the page
-        const linksContainer = document.getElementById('profileLinks');
-        let linksHTML = '';
-        
-        // Debug: Log all URL parameters
-        console.log('URL Parameters:');
-        for (const [key, value] of urlParams.entries()) {
-            console.log(`${key}: ${value}`);
-        }
-
-        // Function to create a link element
-        function createLink(icon, title, url, isEmail = false, isPhone = false) {
-            if (!url) {
-                console.log('Skipping empty URL for:', title);
-                return '';
-            }
-            
-            console.log('Creating link:', {icon, title, url, isEmail, isPhone});
             let href = url;
-            let displayText = title || url;
+            let displayText = title;
             
-            // Handle different link types
             if (isEmail) {
-                href = 'mailto:' + url;
-                displayText = url; // Show actual email in the link
+                href = `mailto:${url}`;
+                displayText = url;
             } else if (isPhone) {
-                href = 'tel:' + url.replace(/[^0-9+]/g, '');
-                displayText = url; // Show actual phone number in the link
+                href = `tel:${url.replace(/[^0-9+]/g, '')}`;
+                displayText = url;
             } else if (!url.match(/^[a-zA-Z]+:\/\//)) {
-                // Add https:// if no protocol is specified
-                href = 'https://' + url;
-                
-                // Clean up common social media URLs for display
-                if (url.includes('github.com/')) {
-                    displayText = 'GitHub: ' + url.split('github.com/').pop().split('/')[0];
-                } else if (url.includes('linkedin.com/in/')) {
-                    displayText = 'LinkedIn: ' + url.split('linkedin.com/in/').pop().split('/')[0];
-                }
+                href = `https://${url}`;
             }
             
-            // Define icons for different link types
-            const icons = {
-                'email': '✉️',
-                'phone': '📞',
-                'github': '🐙',
-                'linkedin': '💼',
-                'resume': '📄',
-                'default': '🔗'
+            const iconMap = {
+                'email': 'envelope',
+                'phone': 'phone',
+                'github': 'github',
+                'linkedin': 'linkedin',
+                'resume': 'file-pdf'
             };
             
-            // Get the appropriate icon
-            const linkIcon = icons[icon.toLowerCase()] || icons['default'];
+            const iconClass = iconMap[icon.toLowerCase()] || 'link';
             
-            // Create the link HTML
             return `
-                <div class="link-item">
-                    <a href="${encodeURI(href)}" target="_blank" rel="noopener noreferrer" class="social-link">
-                        <span class="link-icon">${linkIcon}</span>
-                        <span class="link-text">
-                            <span class="link-title">${title}</span>
-                            <span class="link-url">${displayText}</span>
-                        </span>
-                        <span class="link-arrow">→</span>
-                    </a>
-                </div>
+                <a href="${encodeURI(href)}" class="social-link" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-${iconClass}"></i>
+                    <span class="link-text">
+                        <span class="link-title">${title}</span>
+                        <span class="link-url">${displayText}</span>
+                    </span>
+                </a>
             `;
         }
 
-        // Log the final profile data for debugging
-        console.log('Final profile data:', JSON.stringify(profileData, null, 2));
-        
-        // Initialize the page when the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM fully loaded, initializing profile...');
+        // Update the UI with profile data
+        function updateProfileUI() {
+            // Update profile info
+            document.getElementById('profile-name').textContent = profileData.name;
             
-            // Store the data in localStorage for future visits (if we have a profile ID)
-            if (profileData.id) {
-                try {
-                    localStorage.setItem('profile_' + profileData.id, JSON.stringify(profileData));
-                    console.log('Profile data saved to localStorage');
-                } catch (e) {
-                    console.error('Error saving to localStorage:', e);
-                }
-            }
-            
-            // Update the UI with profile data
-            updateProfileUI();
-            
-            // Handle profile photo with fallback
+            // Set profile image with fallback
+            const profileImage = document.getElementById('profile-image');
             if (profileData.photo) {
-                setImageWithFallback(profileData.photo);
+                profileImage.src = profileData.photo;
+                profileImage.style.display = 'block';
+                profileImage.onerror = function() {
+                    this.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+                };
             } else {
-                // Set default avatar if no photo
-                const profileImage = document.getElementById('profile-image');
-                if (profileImage) {
-                    profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
-                    profileImage.style.display = 'block';
-                }
+                profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+                profileImage.style.display = 'block';
             }
             
-            console.log('Final profile data:', JSON.stringify(profileData, null, 2));
-        });
+            // Add social links
+            const linksContainer = document.getElementById('profile-links');
+            let linksHTML = '';
+            
+            if (profileData.email) {
+                linksHTML += createSocialLink('email', 'Email', profileData.email, true);
+            }
+            
+            if (profileData.phone) {
+                linksHTML += createSocialLink('phone', 'Call', profileData.phone, false, true);
+            }
+            
+            if (profileData.github) {
+                linksHTML += createSocialLink('github', 'GitHub', profileData.github);
+            }
+            
+            if (profileData.linkedin) {
+                linksHTML += createSocialLink('linkedin', 'LinkedIn', profileData.linkedin);
+            }
+            
+            if (profileData.resume) {
+                linksHTML += createSocialLink('resume', 'View Resume', profileData.resume);
+            }
+            
+            if (linksHTML) {
+                linksContainer.innerHTML = linksHTML;
+            } else {
+                linksContainer.innerHTML = '<p>No contact information available.</p>';
+            }
+        }
+
+        // Initialize when the page loads
+        document.addEventListener('DOMContentLoaded', updateProfileUI);
     </script>
 </body>
 </html>
