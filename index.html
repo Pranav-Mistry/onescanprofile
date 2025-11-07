@@ -5,74 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - OneScan</title>
     <style>
-        body {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #333;
-            background-color: #f5f7fa;
         }
+        
+        body {
+            background-color: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
         .profile-card {
             background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-top: 20px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 380px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
         }
+        
         .profile-image {
-            width: 150px;
-            height: 150px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             object-fit: cover;
             margin: 0 auto 20px;
+            border: 4px solid #4a90e2;
             display: block;
-            border: 4px solid #3498db;
         }
+        
         .profile-name {
-            font-size: 2.2em;
-            margin: 0.5em 0;
+            font-size: 24px;
+            font-weight: 600;
             color: #2c3e50;
-            text-align: center;
+            margin-bottom: 5px;
         }
+        
+        .profile-title {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        
         .social-links {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            margin-top: 25px;
+            gap: 15px;
         }
+        
         .social-link {
             display: flex;
             align-items: center;
-            padding: 12px 20px;
+            padding: 14px 20px;
             background: #f8f9fa;
-            border-radius: 8px;
-            color: #333;
+            border-radius: 10px;
+            color: #2c3e50;
             text-decoration: none;
             transition: all 0.3s ease;
-        }
-        .social-link:hover {
-            background: #e9ecef;
-            transform: translateY(-2px);
-        }
-        .social-link i {
-            margin-right: 10px;
-            font-size: 20px;
-            width: 24px;
-            text-align: center;
-        }
-        .link-text {
-            flex: 1;
             text-align: left;
         }
+        
+        .social-link:hover {
+            background: #eef2f7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .social-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 15px;
+            font-size: 20px;
+            color: #4a90e2;
+        }
+        
+        .link-text {
+            flex: 1;
+        }
+        
         .link-title {
             display: block;
             font-weight: 500;
+            margin-bottom: 3px;
+            color: #2c3e50;
         }
+        
         .link-url {
             font-size: 12px;
-            color: #666;
+            color: #7f8c8d;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -83,7 +110,8 @@
 <body>
     <div class="profile-card">
         <img id="profile-image" class="profile-image" src="" alt="Profile Image">
-        <h1 id="profile-name" class="profile-name">Loading...</h1>
+        <h1 id="profile-name" class="profile-name">John Doe</h1>
+        <p id="profile-title" class="profile-title">Software Developer</p>
         <div id="profile-links" class="social-links">
             <!-- Links will be added here by JavaScript -->
         </div>
@@ -105,6 +133,7 @@
         const profileData = {
             id: getUrlParam('id'),
             name: decodeURIComponent(getUrlParam('name') || 'Profile'),
+            title: decodeURIComponent(getUrlParam('title') || ''),
             email: getUrlParam('email'),
             phone: getUrlParam('phone'),
             github: getUrlParam('github'),
@@ -118,16 +147,30 @@
             if (!url) return '';
             
             let href = url;
-            let displayText = title;
+            let displayText = url;
+            let linkTitle = title;
             
             if (isEmail) {
                 href = `mailto:${url}`;
-                displayText = url;
+                linkTitle = 'Email';
             } else if (isPhone) {
                 href = `tel:${url.replace(/[^0-9+]/g, '')}`;
-                displayText = url;
+                linkTitle = 'Call';
             } else if (!url.match(/^[a-zA-Z]+:\/\//)) {
                 href = `https://${url}`;
+            }
+            
+            // Format display text for social links
+            if (!isEmail && !isPhone) {
+                try {
+                    const urlObj = new URL(href);
+                    displayText = urlObj.hostname.replace('www.', '');
+                    if (urlObj.pathname !== '/') {
+                        displayText += urlObj.pathname;
+                    }
+                } catch (e) {
+                    console.error('Error parsing URL:', e);
+                }
             }
             
             const iconMap = {
@@ -135,7 +178,7 @@
                 'phone': 'phone',
                 'github': 'github',
                 'linkedin': 'linkedin',
-                'resume': 'file-pdf'
+                'resume': 'file-alt'
             };
             
             const iconClass = iconMap[icon.toLowerCase()] || 'link';
@@ -144,7 +187,7 @@
                 <a href="${encodeURI(href)}" class="social-link" target="_blank" rel="noopener noreferrer">
                     <i class="fas fa-${iconClass}"></i>
                     <span class="link-text">
-                        <span class="link-title">${title}</span>
+                        <span class="link-title">${linkTitle}</span>
                         <span class="link-url">${displayText}</span>
                     </span>
                 </a>
@@ -154,7 +197,8 @@
         // Update the UI with profile data
         function updateProfileUI() {
             // Update profile info
-            document.getElementById('profile-name').textContent = profileData.name;
+            document.getElementById('profile-name').textContent = profileData.name || 'Profile';
+            document.getElementById('profile-title').textContent = profileData.title || 'Profile';
             
             // Set profile image with fallback
             const profileImage = document.getElementById('profile-image');
@@ -162,10 +206,10 @@
                 profileImage.src = profileData.photo;
                 profileImage.style.display = 'block';
                 profileImage.onerror = function() {
-                    this.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+                    this.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=identicon&f=y';
                 };
             } else {
-                profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+                profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=identicon&f=y';
                 profileImage.style.display = 'block';
             }
             
@@ -190,7 +234,7 @@
             }
             
             if (profileData.resume) {
-                linksHTML += createSocialLink('resume', 'View Resume', profileData.resume);
+                linksHTML += createSocialLink('resume', 'Resume', profileData.resume);
             }
             
             if (linksHTML) {
