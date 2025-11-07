@@ -7,33 +7,34 @@
     <script>
         // Function to parse URL parameters
         function getUrlParameter(name) {
-            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-            const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-            const results = regex.exec(location.search);
-            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(name) || '';
+            } catch (e) {
+                console.error('Error parsing URL parameters:', e);
+                return '';
+            }
         }
 
         // Check if we should redirect to the app
         (function() {
-            // Only redirect if we have parameters and not coming from a redirect
-            if (window.location.search && !sessionStorage.getItem('redirected')) {
+            // Only redirect if we have a profile ID and not coming from a redirect
+            const profileId = getUrlParameter('id');
+            if (profileId && !sessionStorage.getItem('redirected')) {
                 // Mark that we've attempted a redirect
                 sessionStorage.setItem('redirected', 'true');
                 
-                // Create app deep link
-                const appLink = 'onescanprofile://viewprofile' + window.location.search;
-                
                 // Try to open the app
-                window.location.href = appLink;
+                window.location.href = `onescanprofile://view?id=${profileId}`;
                 
                 // If the app is not installed, this will fail and continue to the web version
                 setTimeout(function() {
                     // If we're still here after a short delay, the app didn't open
                     // Continue showing the web version
                     sessionStorage.removeItem('redirected');
-                }, 100);
+                }, 500);
             } else {
-                // Clear the redirect flag if no parameters
+                // Clear the redirect flag if no profile ID
                 sessionStorage.removeItem('redirected');
             }
         })();
@@ -201,16 +202,40 @@
             }
         }
 
-        // Get all profile data from URL
-        const profileData = {
-            name: getUrlParameter('name'),
-            email: getUrlParameter('email'),
-            phone: getUrlParameter('phone'),
-            github: getUrlParameter('github'),
-            linkedin: getUrlParameter('linkedin'),
-            photo: getUrlParameter('photo'),
-            resume: getUrlParameter('resume')
-        };
+        // Get the profile ID from URL
+        const profileId = getUrlParameter('id');
+        let profileData = {};
+
+        // Try to load profile data from localStorage if available (for demo purposes)
+        // In a real app, you would fetch this from your server
+        if (profileId) {
+            const storedProfile = localStorage.getItem('profile_' + profileId);
+            if (storedProfile) {
+                try {
+                    profileData = JSON.parse(storedProfile);
+                } catch (e) {
+                    console.error('Error parsing profile data:', e);
+                }
+            }
+        }
+
+        // Fallback to direct URL parameters if no profile ID or stored data
+        if (Object.keys(profileData).length === 0) {
+            profileData = {
+                name: getUrlParameter('name'),
+                email: getUrlParameter('email'),
+                phone: getUrlParameter('phone'),
+                github: getUrlParameter('github'),
+                linkedin: getUrlParameter('linkedin'),
+                photo: getUrlParameter('photo'),
+                resume: getUrlParameter('resume')
+            };
+            
+            // If we have a name, store it with the profile ID for future use
+            if (profileData.name && profileId) {
+                localStorage.setItem('profile_' + profileId, JSON.stringify(profileData));
+            }
+        }
 
         // Log the received data for debugging
         console.log('Profile data:', JSON.stringify(profileData, null, 2));
@@ -358,3 +383,4 @@
     </script>
 </body>
 </html>
+
