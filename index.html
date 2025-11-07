@@ -187,57 +187,105 @@
             }
         }
 
-        // Process photo URL (handle ImgBB and other cases)
+        // Process photo URL (handle various URL formats)
         function processPhotoUrl(url) {
             if (!url) return '';
             
-            // If it's an ImgBB URL, make sure it's direct
-            if (url.includes('imgbb.com') && !url.includes('i.ibb.co')) {
-                // Try to convert to direct link format
-                const match = url.match(/imgbb\.com\/([a-zA-Z0-9]+)/);
-                if (match && match[1]) {
-                    return `https://i.ibb.co/${match[1]}/image.png`;
-                }
+            // Decode URL-encoded characters
+            try {
+                url = decodeURIComponent(url);
+            } catch (e) {
+                console.error('Error decoding URL:', e);
             }
+            
+            // Handle different URL formats
+            if (url.startsWith('content://')) {
+                // For content URIs, we need to use a different approach
+                return ''; // Will fall back to default avatar
+            } else if (url.startsWith('http')) {
+                // For web URLs, ensure they're properly encoded
+                return encodeURI(url).replace(/'/g, "%27").replace(/"/g, "%22");
+            }
+            
             return url;
         }
 
-        // Get all URL parameters
+        // Get all URL parameters with proper decoding
+        function getDecodedParam(param) {
+            try {
+                const value = getUrlParam(param);
+                return value ? decodeURIComponent(value.replace(/\+/g, ' ')) : '';
+            } catch (e) {
+                console.error(`Error decoding ${param}:`, e);
+                return getUrlParam(param) || '';
+            }
+        }
+
+        // Get all profile data with proper decoding
         const profileData = {
-            id: getUrlParam('id'),
-            name: decodeURIComponent(getUrlParam('name') || 'Profile'),
-            title: decodeURIComponent(getUrlParam('title') || ''),
-            email: getUrlParam('email'),
-            phone: getUrlParam('phone'),
-            github: getUrlParam('github'),
-            linkedin: getUrlParam('linkedin'),
-            resume: getUrlParam('resume'),
+            id: getDecodedParam('id'),
+            name: getDecodedParam('name') || 'Profile',
+            title: getDecodedParam('title'),
+            email: getDecodedParam('email'),
+            phone: getDecodedParam('phone'),
+            github: getDecodedParam('github'),
+            linkedin: getDecodedParam('linkedin'),
+            resume: getDecodedParam('resume'),
             photo: processPhotoUrl(getUrlParam('photo'))
         };
+        
+        console.log('Profile Data:', profileData); // For debugging
 
         // Function to create a social link
         function createSocialLink(icon, title, url, isEmail = false, isPhone = false) {
             if (!url) return '';
+            
+            // Clean up the URL first
+            url = url.trim();
             
             let href = url;
             let displayText = url;
             let linkTitle = title;
             
             if (isEmail) {
-                href = `mailto:${url}`;
+                // Handle email
+                const email = url.replace(/^mailto:/i, '');
+                href = `mailto:${email}`;
                 linkTitle = 'Email';
-                displayText = url;
+                displayText = email;
             } else if (isPhone) {
-                href = `tel:${url.replace(/[^0-9+]/g, '')}`;
+                // Handle phone numbers
+                const phone = url.replace(/[^0-9+]/g, '');
+                href = `tel:${phone}`;
                 linkTitle = 'Call';
-                displayText = url;
-            } else if (!url.match(/^[a-zA-Z]+:\/\//)) {
-                if (icon === 'github') {
-                    href = `https://github.com/${url}`;
-                } else if (icon === 'linkedin') {
-                    href = `https://linkedin.com/in/${url}`;
-                } else {
-                    href = `https://${url}`;
+                displayText = url; // Show original format
+            } else {
+                // Handle web URLs
+                try {
+                    // If it's not a complete URL, add https://
+                    if (!url.match(/^[a-zA-Z]+:\/\//)) {
+                        // Special handling for known services
+                        if (icon === 'github') {
+                            href = `https://github.com/${url.replace(/^@/, '')}`;
+                        } else if (icon === 'linkedin') {
+                            href = `https://linkedin.com/in/${url}`;
+                        } else {
+                            href = `https://${url}`;
+                        }
+                    }
+                    
+                    // Format display text
+                    try {
+                        const urlObj = new URL(href);
+                        displayText = urlObj.hostname.replace('www.', '');
+                        if (urlObj.pathname !== '/') {
+                            displayText += urlObj.pathname;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing URL:', e);
+                    }
+                } catch (e) {
+                    console.error('Error processing URL:', e);
                 }
             }
             
@@ -296,13 +344,26 @@
                 const profileImage = document.getElementById('profile-image');
                 if (profileImage) {
                     if (profileData.photo) {
-                        profileImage.src = profileData.photo;
-                        profileImage.onerror = function() {
-                            this.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+                        // Create a new image to test if the URL is valid
+                        const testImg = new Image();
+                        testImg.onload = function() {
+                            // If image loads successfully, set it
+                            profileImage.src = profileData.photo;
                         };
+                        testImg.onerror = function() {
+                            // If image fails to load, use default avatar
+                            profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+                        };
+                        testImg.src = profileData.photo;
                     } else {
+                        // Use default avatar if no photo URL
                         profileImage.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
                     }
+                    
+                    // Add error handler as a backup
+                    profileImage.onerror = function() {
+                        this.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+                    };
                 }
                 
                 // Add social links
