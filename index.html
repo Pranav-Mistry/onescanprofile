@@ -210,49 +210,48 @@
             }
         }
 
-        // Get all URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const profileId = urlParams.get('id') || '';
-        let profileData = {};
-        
-        // Get all profile data from URL parameters
-        profileData = {
-            id: profileId,
-            name: urlParams.get('name') || 'Profile',
-            email: urlParams.get('email') || '',
-            phone: urlParams.get('phone') || '',
-            github: urlParams.get('github') || '',
-            linkedin: urlParams.get('linkedin') || '',
-            resume: urlParams.get('resume') || '',
-            photo: urlParams.get('photo') || ''
-        };
-        
-        // Clean up the data
-        Object.keys(profileData).forEach(key => {
-            if (typeof profileData[key] === 'string') {
-                profileData[key] = profileData[key].trim();
-            }
-        });
-        
-        // Log the received data for debugging
-        console.log('Profile data from URL:', JSON.stringify(profileData, null, 2));
-        
-        // Store the data in localStorage for future visits (if we have a profile ID)
-        if (profileId) {
+        // Function to safely get URL parameter with fallback
+        function getUrlParam(param) {
             try {
-                localStorage.setItem('profile_' + profileId, JSON.stringify(profileData));
-                console.log('Profile data saved to localStorage');
+                const urlParams = new URLSearchParams(window.location.search);
+                const value = urlParams.get(param) || '';
+                return typeof value === 'string' ? value.trim() : '';
             } catch (e) {
-                console.error('Error saving to localStorage:', e);
+                console.error('Error getting URL parameter:', e);
+                return '';
             }
         }
 
+        // Get all URL parameters
+        const profileData = {
+            id: getUrlParam('id'),
+            name: getUrlParam('name') || 'Profile',
+            email: getUrlParam('email'),
+            phone: getUrlParam('phone'),
+            github: getUrlParam('github'),
+            linkedin: getUrlParam('linkedin'),
+            resume: getUrlParam('resume'),
+            photo: getUrlParam('photo')
+        };
+        
+        // Log the received data for debugging
+        console.log('Profile data from URL:', JSON.stringify(profileData, null, 2));
+
         // Update the page with profile data
         function updateProfileUI() {
-            // Update profile info
-            document.getElementById('profile-name').textContent = profileData.name || 'Profile';
-            document.getElementById('profile-email').textContent = profileData.email || '';
-            document.getElementById('profile-phone').textContent = profileData.phone || '';
+            // Safely update profile info
+            const safeSetText = (id, text) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = text;
+                } else {
+                    console.warn(`Element with ID '${id}' not found`);
+                }
+            };
+            
+            safeSetText('profile-name', profileData.name || 'Profile');
+            safeSetText('profile-email', profileData.email || '');
+            safeSetText('profile-phone', profileData.phone || '');
             
             // Update social links
             const linksContainer = document.getElementById('profile-links');
@@ -488,6 +487,18 @@
         // Initialize the page when the DOM is fully loaded
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM fully loaded, initializing profile...');
+            
+            // Store the data in localStorage for future visits (if we have a profile ID)
+            if (profileData.id) {
+                try {
+                    localStorage.setItem('profile_' + profileData.id, JSON.stringify(profileData));
+                    console.log('Profile data saved to localStorage');
+                } catch (e) {
+                    console.error('Error saving to localStorage:', e);
+                }
+            }
+            
+            // Update the UI with profile data
             updateProfileUI();
             
             // Handle profile photo with fallback
@@ -501,6 +512,8 @@
                     profileImage.style.display = 'block';
                 }
             }
+            
+            console.log('Final profile data:', JSON.stringify(profileData, null, 2));
         });
     </script>
 </body>
